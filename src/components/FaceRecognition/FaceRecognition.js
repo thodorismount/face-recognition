@@ -20,7 +20,7 @@ const FaceRecognition = props => {
             bottom: props.box.bottomRow,
             left: props.box.leftCol
           }}
-        ></div>
+        />
       </div>
     </div>
   );
