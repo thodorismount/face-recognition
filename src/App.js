@@ -28,20 +28,43 @@ const particlesOptions = {
 function App(props) {
   const [input, setInput] = useState('');
   const [imgUrl, setImgUrl] = useState('');
+  const [box, setBox] = useState([]);
 
   const onInputChange = event => {
     setInput(event.target.value);
   };
 
+  const calculateFaceLocation = data => {
+    const clarifaiFace =
+      data.outputs[0].data.regions[0].region_info.bounding_box;
+    const image = document.getElementById('inputimage');
+    const width = Number(image.width);
+    const height = Number(image.height);
+    return {
+      leftCol: clarifaiFace.left_col * width,
+      topRow: clarifaiFace.top_row * height,
+      rightCol: width - clarifaiFace.right_col * width,
+      bottomRow: height - clarifaiFace.bottom_row * height
+    };
+  };
+
+  console.log(box);
+
+  const displayFaceBox = box => {
+    setBox(box);
+    console.log(box.topRow);
+  };
+
   const onButtonSubmit = () => {
     setImgUrl(input);
     console.log(imgUrl);
-    app.models.predict(Clarifai.FACE_DETECT_MODEL, input).then(
-      function (response) {
+    app.models
+      .predict(Clarifai.FACE_DETECT_MODEL, input)
+      .then(response => {
         console.log(response.outputs[0].data.regions.length);
-      },
-      function (error) {}
-    );
+        displayFaceBox(calculateFaceLocation(response));
+      })
+      .catch(err => console.log(err));
   };
 
   return (
@@ -54,7 +77,7 @@ function App(props) {
         onInputChange={onInputChange}
         onButtonSubmit={onButtonSubmit}
       />
-      <FaceRecognition imgUrl={imgUrl} />
+      <FaceRecognition box={box} imgUrl={imgUrl} />
     </div>
   );
 }
